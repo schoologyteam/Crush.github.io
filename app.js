@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 const grid = document.querySelector('.grid')
 const scoreDisplay = document.getElementById('score')
+let bestScore = localStorage.getItem('bestScore') ? parseInt(localStorage.getItem('bestScore')) : 0;
 const width = 8
 const squares = []
 let score = 0
+let best_score = 0
 
 const candyColors = [
     'url(images/red-candy.png)',
@@ -98,25 +100,42 @@ function moveIntoSquareBelow() {
 
 ///Checking for Matches
 //for row of Four
-  function checkRowForFour() {
-    for (i = 0; i < 60; i ++) {
-      let rowOfFour = [i, i+1, i+2, i+3]
-      let decidedColor = squares[i].style.backgroundImage
-      const isBlank = squares[i].style.backgroundImage === ''
+function checkRowForFour() {
+  const numRows = 6; 
+  const numCols = 10; 
 
-      const notValid = [5, 6, 7, 13, 14, 15, 21, 22, 23, 29, 30, 31, 37, 38, 39, 45, 46, 47, 53, 54, 55]
-      if (notValid.includes(i)) continue
+  for (let row = 0; row < numRows; row++) {
+    const startIndex = row * numCols;
+    // Check if row has enough space for 4 elements
+    const isRowValid = startIndex + 3 < numCols; 
 
-      if(rowOfFour.every(index => squares[index].style.backgroundImage === decidedColor && !isBlank)) {
-        score += 4
-        scoreDisplay.innerHTML = score
-        rowOfFour.forEach(index => {
-        squares[index].style.backgroundImage = ''
-        })
-      }
+    if (isRowValid) {
+      const decidedColor = squares[startIndex].style.backgroundImage;
+      const isBlank = squares[startIndex].style.backgroundImage === '';
+
+      if (isBlank || !allSameColor(startIndex, decidedColor)) continue;
+
+      score += 4;
+      updateScoreDisplay();
+      clearMatchingSquares(startIndex);
     }
   }
-  checkRowForFour()
+}
+
+function allSameColor(startIndex, color) {
+  for (let i = 1; i <= 3; i++) {
+    if (squares[startIndex + i].style.backgroundImage !== color) return false;
+  }
+  return true;
+}
+
+function clearMatchingSquares(startIndex) {
+  for (let i = 0; i <= 3; i++) {
+    squares[startIndex + i].style.backgroundImage = '';
+  }
+}
+
+checkRowForFour();
 
 //for column of Four
   function checkColumnForFour() {
@@ -128,6 +147,7 @@ function moveIntoSquareBelow() {
       if(columnOfFour.every(index => squares[index].style.backgroundImage === decidedColor && !isBlank)) {
         score += 4
         scoreDisplay.innerHTML = score
+        bestScore.innerHTML = score;
         columnOfFour.forEach(index => {
         squares[index].style.backgroundImage = ''
         })
@@ -149,6 +169,7 @@ checkColumnForFour()
       if(rowOfThree.every(index => squares[index].style.backgroundImage === decidedColor && !isBlank)) {
         score += 3
         scoreDisplay.innerHTML = score
+        bestScore.innerHTML = score;
         rowOfThree.forEach(index => {
         squares[index].style.backgroundImage = ''
         })
@@ -167,6 +188,7 @@ checkColumnForFour()
       if(columnOfThree.every(index => squares[index].style.backgroundImage === decidedColor && !isBlank)) {
         score += 3
         scoreDisplay.innerHTML = score
+        bestScore.innerHTML = score;
         columnOfThree.forEach(index => {
         squares[index].style.backgroundImage = ''
         })
